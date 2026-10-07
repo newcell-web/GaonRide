@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Passenger - GaonRide AI</title>
+  <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body class="passenger-page">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LOADING OVERLAY
+  ════════════════════════════════════════════════════════════ -->
+  <div id="loading-overlay" class="loading-overlay" hidden>
+    <div class="loading-inner">
+      <div class="spinner"></div>
+      <p id="loading-message" class="loading-message">Processing…</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════════════════════════ -->
+  <header class="page-header">
+    <div class="container header-inner">
+      <a href="index.html" class="back-link" aria-label="Back to home">
+        <span class="back-arrow">←</span> Home
+      </a>
+      <h1 class="page-title">Request a Ride</h1>
+      <span class="header-brand">🚐 GaonRide AI</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       AI HEALTH BANNER  (hidden unless JS reveals it)
+  ════════════════════════════════════════════════════════════ -->
+  <div id="ai-banner" class="ai-banner" hidden>
+    <div class="container">
+      ⚠️ AI features are currently unavailable. You can still submit a text request manually.
+    </div>
+  </div>
+
+  <main class="container main-content">
+
+    <!-- ─────────────────────────────────────────────────────────
+         TAB NAVIGATION
+    ────────────────────────────────────────────────────────── -->
+    <nav class="tab-nav" role="tablist" aria-label="Request method">
+      <button
+        id="tab-text-btn"
+        class="tab-btn tab-btn--active"
+        role="tab"
+        aria-selected="true"
+        aria-controls="tab-text"
+        data-tab="text">
+        ✍️ Type Request
+      </button>
+      <button
+        id="tab-voice-btn"
+        class="tab-btn"
+        role="tab"
+        aria-selected="false"
+        aria-controls="tab-voice"
+        data-tab="voice">
+        🎙️ Voice Request
+      </button>
+    </nav>
+
+    <!-- ─────────────────────────────────────────────────────────
+         TAB 1 — TEXT REQUEST
+    ────────────────────────────────────────────────────────── -->
+    <section id="tab-text" class="tab-panel tab-panel--active" role="tabpanel" aria-labelledby="tab-text-btn">
+      <form id="ride-request-form" class="ride-form" novalidate>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="passenger-name" class="form-label">Your Name <span class="required">*</span></label>
+            <input
+              id="passenger-name"
+              name="passenger_name"
+              type="text"
+              class="form-input"
+              placeholder="Full name"
+              required
+              autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label for="passenger-phone" class="form-label">Phone Number</label>
+            <input
+              id="passenger-phone"
+              name="passenger_phone"
+              type="tel"
+              class="form-input"
+              placeholder="e.g. 9876543210"
+              autocomplete="tel">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="origin" class="form-label">From <span class="required">*</span></label>
+            <input
+              id="origin"
+              name="origin"
+              type="text"
+              class="form-input"
+              placeholder="Your village or area"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="destination" class="form-label">To <span class="required">*</span></label>
+            <input
+              id="destination"
+              name="destination"
+              type="text"
+              class="form-input"
+              placeholder="Town or city you need to reach"
+              required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="travel-date" class="form-label">Travel Date <span class="required">*</span></label>
+            <input
+              id="travel-date"
+              name="travel_date"
+              type="date"
+              class="form-input"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="preferred-time" class="form-label">Preferred Time <span class="required">*</span></label>
+            <input
+              id="preferred-time"
+              name="preferred_time"
+              type="time"
+              class="form-input"
+              required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group form-group--narrow">
+            <label for="passenger-count" class="form-label">Number of Passengers <span class="required">*</span></label>
+            <input
+              id="passenger-count"
+              name="passenger_count"
+              type="number"
+              class="form-input"
+              min="1"
+              max="20"
+              value="1"
+              required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes" class="form-label">Notes</label>
+          <textarea
+            id="notes"
+            name="notes"
+            class="form-input form-textarea"
+            rows="3"
+            placeholder="Any special needs or details…"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" id="submit-request-btn" class="btn btn-primary btn-large btn-full">
+            Find Matching Rides →
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────
+         TAB 2 — VOICE REQUEST
+    ────────────────────────────────────────────────────────── -->
+    <section id="tab-voice" class="tab-panel" role="tabpanel" aria-labelledby="tab-voice-btn" hidden>
+
+      <div class="voice-instructions">
+        <p>Press the microphone and speak your travel request in <strong>English</strong>, <strong>Hindi</strong>, or <strong>Assamese</strong>.</p>
+        <p class="voice-example">
+          Example: <em>"I need to go from Nagaon to Guwahati on 15th July, morning, for 2 people."</em>
+        </p>
+      </div>
+
+      <div class="voice-controls">
+        <button id="mic-btn" class="mic-btn" type="button" aria-label="Start recording">
+          <span class="mic-icon">🎙️</span>
+          <span class="mic-label">Tap to Record</span>
+        </button>
+      </div>
+
+      <div id="recording-status" class="recording-status" hidden>
+        🔴 Recording… tap to stop
+      </div>
+
+      <div id="transcription-result" class="transcription-result" hidden>
+        <h3 class="transcription-title">Transcription</h3>
+        <p id="transcription-text" class="transcription-text"></p>
+        <button id="parse-btn" type="button" class="btn btn-secondary">
+          🤖 Parse this request
+        </button>
+      </div>
+
+      <div id="voice-unavailable" class="voice-unavailable" hidden>
+        <p>⚠️ Voice input is not available in your browser or AI service is offline.</p>
+        <p>Please use the <strong>Type Request</strong> tab instead.</p>
+      </div>
+
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────
+         AI RESULT CARD
+    ────────────────────────────────────────────────────────── -->
+    <section id="ai-result-card" class="card ai-result-card" hidden>
+      <div class="card-header">
+        <h2 class="card-title">Ride Request Details</h2>
+        <span class="ai-badge">🤖 AI Interpretation</span>
+      </div>
+      <div class="card-body">
+        <dl class="result-fields">
+          <div class="result-field">
+            <dt class="result-label">From</dt>
+            <dd id="ai-origin" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">To</dt>
+            <dd id="ai-destination" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Travel Date</dt>
+            <dd id="ai-date" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Preferred Time</dt>
+            <dd id="ai-time" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Passengers</dt>
+            <dd id="ai-passengers" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Language Detected</dt>
+            <dd id="ai-language" class="result-value">—</dd>
+          </div>
+          <div class="result-field result-field--full">
+            <dt class="result-label">Notes</dt>
+            <dd id="ai-notes" class="result-value">—</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="card-footer">
+        <button id="confirm-ai-btn" type="button" class="btn btn-primary">
+          Confirm &amp; Submit
+        </button>
+        <button id="edit-manually-btn" type="button" class="btn btn-ghost">
+          Edit Manually
+        </button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────
+         GROUP SUGGESTION CARD
+    ────────────────────────────────────────────────────────── -->
+    <section id="group-suggestion" class="card group-suggestion-card" hidden>
+      <div class="success-banner">
+        ✅ Your request has been submitted! You've been added to a group.
+      </div>
+      <div class="card-header">
+        <h2 class="card-title">Your Ride Group</h2>
+      </div>
+      <div class="card-body">
+        <dl class="result-fields">
+          <div class="result-field">
+            <dt class="result-label">Group</dt>
+            <dd id="group-name" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Destination</dt>
+            <dd id="group-destination" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Date</dt>
+            <dd id="group-date" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Suggested Departure</dt>
+            <dd id="group-departure" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Passengers in Group</dt>
+            <dd id="group-passengers" class="result-value">—</dd>
+          </div>
+          <div class="result-field">
+            <dt class="result-label">Driver Status</dt>
+            <dd id="group-driver-status" class="result-value">—</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="card-footer">
+        <button id="view-driver-status-btn" type="button" class="btn btn-secondary">
+          View Driver Status
+        </button>
+      </div>
+    </section>
+
+    <!-- ─────────────────────────────────────────────────────────
+         MAP SECTION
+    ────────────────────────────────────────────────────────── -->
+    <section id="passenger-map-section" class="map-section" hidden>
+      <h2 class="section-subtitle">Route Map</h2>
+      <div id="passenger-map" class="map-container" style="height:300px;"></div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2024 GaonRide AI | Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="static/js/app.js"></script>
+  <script src="static/js/voice.js"></script>
+  <script src="static/js/map.js"></script>
+  <script src="static/js/passenger.js"></script>
+</body>
+</html>

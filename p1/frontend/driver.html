@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Driver Dashboard - GaonRide AI</title>
+  <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body class="driver-page">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LOADING OVERLAY
+  ════════════════════════════════════════════════════════════ -->
+  <div id="loading-overlay" class="loading-overlay" hidden>
+    <div class="loading-inner">
+      <div class="spinner"></div>
+      <p id="loading-message" class="loading-message">Loading…</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       OFFER MODAL (hidden by default)
+  ════════════════════════════════════════════════════════════ -->
+  <div id="offer-modal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="modal-title" class="modal-title">Offer a Ride</h2>
+        <button id="modal-close-btn" class="modal-close-btn" type="button" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-group-info">
+          <p id="modal-group-name" class="modal-group-name"></p>
+          <p id="modal-group-details" class="modal-group-details"></p>
+        </div>
+
+        <form id="offer-form" class="offer-form" novalidate>
+          <input type="hidden" id="offer-group-id" name="group_id" value="">
+
+          <div class="form-group">
+            <label for="driver-name" class="form-label">Your Name <span class="required">*</span></label>
+            <input
+              id="driver-name"
+              name="driver_name"
+              type="text"
+              class="form-input"
+              placeholder="Full name"
+              required
+              autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label for="driver-phone" class="form-label">Phone Number <span class="required">*</span></label>
+            <input
+              id="driver-phone"
+              name="driver_phone"
+              type="tel"
+              class="form-input"
+              placeholder="e.g. 9876543210"
+              required
+              autocomplete="tel">
+          </div>
+
+          <div class="form-group">
+            <label for="vehicle-type" class="form-label">Vehicle Type <span class="required">*</span></label>
+            <select id="vehicle-type" name="vehicle_type" class="form-input form-select" required>
+              <option value="" disabled selected>Select vehicle type…</option>
+              <option value="Auto-Rickshaw">Auto-Rickshaw</option>
+              <option value="E-Rickshaw">E-Rickshaw</option>
+              <option value="Shared Van">Shared Van</option>
+              <option value="Tata Magic">Tata Magic</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="available-seats" class="form-label">Available Seats <span class="required">*</span></label>
+              <input
+                id="available-seats"
+                name="available_seats"
+                type="number"
+                class="form-input"
+                min="1"
+                max="20"
+                placeholder="e.g. 6"
+                required>
+            </div>
+
+            <div class="form-group">
+              <label for="departure-time" class="form-label">Proposed Departure Time <span class="required">*</span></label>
+              <input
+                id="departure-time"
+                name="departure_time"
+                type="time"
+                class="form-input"
+                required>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" id="confirm-offer-btn" class="btn btn-primary">
+              Confirm Offer ✓
+            </button>
+            <button type="button" id="cancel-offer-btn" class="btn btn-ghost">
+              Cancel
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════════════════════════ -->
+  <header class="page-header">
+    <div class="container header-inner">
+      <a href="index.html" class="back-link" aria-label="Back to home">
+        <span class="back-arrow">←</span> Home
+      </a>
+      <h1 class="page-title">Driver Dashboard</h1>
+      <span class="header-brand">🚐 GaonRide AI</span>
+    </div>
+  </header>
+
+  <main class="container main-content">
+
+    <!-- ─────────────────────────────────────────────────────────
+         STATS BAR
+    ────────────────────────────────────────────────────────── -->
+    <div id="stats-bar" class="stats-bar">
+      <div class="stat-box">
+        <span id="stat-groups" class="stat-value">—</span>
+        <span class="stat-label">Total Groups</span>
+      </div>
+      <div class="stat-box">
+        <span id="stat-passengers" class="stat-value">—</span>
+        <span class="stat-label">Passengers Waiting</span>
+      </div>
+      <div class="stat-box">
+        <span id="stat-offered" class="stat-value">—</span>
+        <span class="stat-label">Groups Offered</span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────
+         ACTION BAR
+    ────────────────────────────────────────────────────────── -->
+    <div class="action-bar">
+      <button id="refresh-btn" type="button" class="btn btn-secondary">
+        🔄 Refresh
+      </button>
+      <button id="seed-btn" type="button" class="btn btn-ghost">
+        📦 Load Demo Data
+      </button>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────
+         GROUPS GRID
+    ────────────────────────────────────────────────────────── -->
+    <div id="groups-grid" class="groups-grid">
+      <!-- Demand group cards are injected here by driver.js -->
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────
+         EMPTY STATE
+    ────────────────────────────────────────────────────────── -->
+    <div id="empty-state" class="empty-state" hidden>
+      <div class="empty-icon">🚌</div>
+      <h2 class="empty-title">No ride requests yet</h2>
+      <p class="empty-sub">Click <strong>Load Demo Data</strong> to see example demand groups</p>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────
+         MAP SECTION
+    ────────────────────────────────────────────────────────── -->
+    <section id="driver-map-section" class="map-section">
+      <h2 class="section-subtitle">Demand Map</h2>
+      <div id="driver-map" class="map-container" style="height:350px;"></div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2024 GaonRide AI | Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="static/js/app.js"></script>
+  <script src="static/js/map.js"></script>
+  <script src="static/js/driver.js"></script>
+</body>
+</html>

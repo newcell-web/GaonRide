@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+python-dotenv
+groq
+httpx
+pytest
+pytest-anyio
+aiofiles

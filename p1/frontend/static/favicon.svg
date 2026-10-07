@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Van body -->
+  <rect x="2" y="11" width="26" height="13" rx="2" fill="#E8720C"/>
+  <!-- Cab section (front rise) -->
+  <rect x="16" y="6" width="11" height="8" rx="2" fill="#E8720C"/>
+  <!-- Windscreen -->
+  <rect x="17.5" y="7.5" width="8" height="5" rx="1" fill="#FDE8D0" opacity="0.85"/>
+  <!-- Side windows (body) -->
+  <rect x="4" y="13" width="5" height="4" rx="1" fill="#FDE8D0" opacity="0.85"/>
+  <rect x="11" y="13" width="5" height="4" rx="1" fill="#FDE8D0" opacity="0.85"/>
+  <!-- Wheels -->
+  <circle cx="8" cy="24.5" r="3.5" fill="#333"/>
+  <circle cx="8" cy="24.5" r="1.5" fill="#999"/>
+  <circle cx="23" cy="24.5" r="3.5" fill="#333"/>
+  <circle cx="23" cy="24.5" r="1.5" fill="#999"/>
+  <!-- Headlight -->
+  <rect x="27" y="17" width="2.5" height="2" rx="0.5" fill="#FFE066"/>
+</svg>
